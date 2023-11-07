@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from pygame import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
@@ -83,7 +84,7 @@ ground_edges = (
 )
 
 ground_surfaces = (
-    (0, 1, 2, 3),
+    (0, 4, 2, 3),
     (0, 1, 5, 4),
     (1, 2, 6, 5),
     (2, 3, 7, 6),
@@ -91,7 +92,7 @@ ground_surfaces = (
     (4, 5, 6, 7)
 )
 
-gravity = 0.01
+gravity = 0.02
 
 # parametry cube
 c_position = [0, 0, 0]
@@ -99,9 +100,16 @@ velocity = 0.0
 
 
 def cube():
+    glEnable(GL_BLEND)
+    glEnable(GL_LINE_SMOOTH)
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+    glLineWidth(1)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
     glBegin(GL_LINES)
     for edge in edges:
         for vertex in edge:
+            glColor3fv((1, 1, 1))
             glVertex3fv(vertices[vertex])
     glEnd()
 
@@ -114,8 +122,8 @@ def cube():
 
 
 def ground():
-    glEnable(GL_TEXTURE_2D)
-    glBindTexture(GL_TEXTURE_2D, glGenTextures(1))
+    # glEnable(GL_TEXTURE_2D)
+    # glBindTexture(GL_TEXTURE_2D, glGenTextures(1))
 
     glBegin(GL_LINES)
     for edge in ground_edges:
@@ -124,20 +132,32 @@ def ground():
             glVertex3fv(ground_vertices[vertex])
     glEnd()
 
+    glBegin(GL_QUADS)
+    for ground_surface in ground_surfaces:
+        for i, vertex in enumerate(ground_surface):
+            glColor3fv((0.15, 0.15, 0.15))
+            glVertex3fv(ground_vertices[vertex])
+    glEnd()
+
 
 def main():
     global velocity
+    global c_position
     pygame.init()
 
     display = (1152, 704)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+
     pygame.display.set_caption('Kacper Malinowski')
     font = pygame.font.SysFont('arial', 32)
 
-    gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
-    glTranslatef(-11.0, 6.0, -27)  # początkowa pozycja
+    gluPerspective(42, (display[0] / display[1]), 0.1, 50.0)
+    glTranslatef(-11.0, 5, -27)  # początkowa pozycja
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
+
+    is_moving_right = False
+    is_moving_left = False
 
     while True:
         for event in pygame.event.get():
@@ -146,7 +166,22 @@ def main():
                 quit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    velocity = 0.4
+                    velocity = 0.6
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    is_moving_right = True
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    is_moving_left = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    is_moving_right = False
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    is_moving_left = False
+
+        if is_moving_right:
+            c_position[0] += 0.2
+
+        if is_moving_left:
+            c_position[0] -= 0.2
 
         c_position[1] += velocity  # zmiana pozycji y
         velocity -= gravity
@@ -157,9 +192,10 @@ def main():
 
         glClearColor(0.3, 0.3, 0.3, 1)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glTranslatef(0.0, c_position[1], 0.0)
+        glTranslatef(c_position[0], c_position[1], 0.0)
+
         cube()
-        glTranslatef(0.0, -c_position[1], 0.0)
+        glTranslatef(-c_position[0], -c_position[1], 0.0)
 
         # pisanie po ekranie test
 
@@ -176,8 +212,8 @@ def main():
         glTranslatef(0.0, 0.0, 0.0)
         ground()
 
-        pygame.display.flip()
         pygame.time.wait(10)
+        pygame.display.flip()
 
 
 main()
