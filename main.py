@@ -140,9 +140,35 @@ def ground():
     glEnd()
 
 
+enemy_position = [0, 0, 0]
+
+
+def enemy():
+    glEnable(GL_BLEND)
+    glEnable(GL_LINE_SMOOTH)
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+    glLineWidth(1)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+    glBegin(GL_LINES)
+    for edge in edges:
+        for vertex in edge:
+            glColor3fv((1, 1, 1))
+            glVertex3fv(vertices[vertex])
+    glEnd()
+
+    glBegin(GL_QUADS)
+    for surface in surfaces:
+        for i, vertex in enumerate(surface):
+            glColor3fv(colors[i])
+            glVertex3fv(vertices[vertex])
+    glEnd()
+
+
 def main():
     global velocity
     global c_position
+    global enemy_position
     pygame.init()
 
     display = (1152, 704)
@@ -190,12 +216,22 @@ def main():
             c_position[1] = -9
             velocity *= -0.2
 
+        enemy_position[0] -= 0.1
+
         glClearColor(0.3, 0.3, 0.3, 1)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glTranslatef(c_position[0], c_position[1], 0.0)
 
+
+        # rysowanie cube
+
+        glTranslatef(c_position[0], c_position[1], 0.0)
         cube()
         glTranslatef(-c_position[0], -c_position[1], 0.0)
+
+        # enemy
+        glTranslatef(enemy_position[0], enemy_position[1], enemy_position[2])
+        enemy()
+        glTranslatef(-enemy_position[0], -enemy_position[1], -enemy_position[2])
 
         # pisanie po ekranie test
 
