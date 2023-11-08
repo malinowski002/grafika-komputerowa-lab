@@ -109,14 +109,14 @@ def cube():
     glBegin(GL_LINES)
     for edge in edges:
         for vertex in edge:
-            glColor3fv((1, 1, 1))
+            glColor3fv((0.37, 0.37, 1))
             glVertex3fv(vertices[vertex])
     glEnd()
 
     glBegin(GL_QUADS)
     for surface in surfaces:
         for i, vertex in enumerate(surface):
-            glColor3fv(colors[i])
+            glColor3fv((0.47, 0.47, 1))
             glVertex3fv(vertices[vertex])
     glEnd()
 
@@ -128,19 +128,19 @@ def ground():
     glBegin(GL_LINES)
     for edge in ground_edges:
         for vertex in edge:
-            glColor3fv((1, 1, 1))
+            glColor3fv((0.27, 0.58, 0.17))
             glVertex3fv(ground_vertices[vertex])
     glEnd()
 
     glBegin(GL_QUADS)
     for ground_surface in ground_surfaces:
         for i, vertex in enumerate(ground_surface):
-            glColor3fv((0.15, 0.15, 0.15))
+            glColor3fv((0.38, 0.78, 0.22))
             glVertex3fv(ground_vertices[vertex])
     glEnd()
 
 
-enemy_position = [0, 0, 0]
+enemy_position = [15, 0, 0]
 
 
 def enemy():
@@ -153,14 +153,14 @@ def enemy():
     glBegin(GL_LINES)
     for edge in edges:
         for vertex in edge:
-            glColor3fv((1, 1, 1))
+            glColor3fv((0.75, 0, 0))
             glVertex3fv(vertices[vertex])
     glEnd()
 
     glBegin(GL_QUADS)
     for surface in surfaces:
         for i, vertex in enumerate(surface):
-            glColor3fv(colors[i])
+            glColor3fv((1, 0.2, 0.2))
             glVertex3fv(vertices[vertex])
     glEnd()
 
@@ -209,18 +209,25 @@ def main():
         if is_moving_left:
             c_position[0] -= 0.2
 
-        c_position[1] += velocity  # zmiana pozycji y
+        # zmiana pozycji y cube
+
+        c_position[1] += velocity
         velocity -= gravity
 
         if c_position[1] < -9:
             c_position[1] = -9
             velocity *= -0.2
 
-        enemy_position[0] -= 0.1
+        # pozycja enemy
 
-        glClearColor(0.3, 0.3, 0.3, 1)
+        # print(f"enemy x: {enemy_position[0]}")
+        if enemy_position[0] < -8:
+            enemy_position[0] = 30
+        else:
+            enemy_position[0] -= 0.1
+
+        glClearColor(0.85, 0.94, 0.95, 1)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
 
         # rysowanie cube
 
@@ -238,7 +245,7 @@ def main():
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        textSurface = font.render("test", True, (95, 95, 255, 255)).convert_alpha()
+        textSurface = font.render("Score: 0", True, (95, 95, 255, 255)).convert_alpha()
         textData = pygame.image.tostring(textSurface, "RGBA", True)
         glWindowPos2d(50, 650)
         glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
