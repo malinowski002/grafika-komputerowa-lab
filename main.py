@@ -165,6 +165,10 @@ def enemy():
     glEnd()
 
 
+def check_collision():
+    if (c_position[0] - enemy_position[0]) ** 2 < 2 and (c_position[1] - enemy_position[1]) ** 2 < 2 and (c_position[2] - enemy_position[2]) ** 2 < 2:
+        print("Collided")
+
 def main():
     global velocity
     global c_position
@@ -228,6 +232,10 @@ def main():
 
         glClearColor(0.85, 0.94, 0.95, 1)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        # sprawdzanie kolizji
+
+        check_collision()
 
         # rysowanie cube
 
