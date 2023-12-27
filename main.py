@@ -140,7 +140,7 @@ def ground():
     glEnd()
 
 
-enemy_position = [15, 0, 0]
+enemy_position = [15, -9, 0]
 
 
 def enemy():
@@ -165,9 +165,17 @@ def enemy():
     glEnd()
 
 
+collision_occurred = False
+
+
 def check_collision():
-    if (c_position[0] - enemy_position[0]) ** 2 < 2 and (c_position[1] - enemy_position[1]) ** 2 < 2 and (c_position[2] - enemy_position[2]) ** 2 < 2:
+    global collision_occurred
+    if not collision_occurred and (c_position[0] - enemy_position[0]) ** 2 < 2 and \
+            (c_position[1] - enemy_position[1]) ** 2 < 2 and \
+            (c_position[2] - enemy_position[2]) ** 2 < 2:
         print("Collided")
+        enemy_position[0] = 30
+
 
 def main():
     global velocity
@@ -224,7 +232,6 @@ def main():
 
         # pozycja enemy
 
-        # print(f"enemy x: {enemy_position[0]}")
         if enemy_position[0] < -8:
             enemy_position[0] = 30
         else:

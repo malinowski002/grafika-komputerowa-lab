@@ -205,3 +205,9 @@ lab_env/bin/activate.csh
 lab_env/bin/activate
 lab_env/.DS_Store
 .DS_Store
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/repozytorium.iml
+.idea/vcs.xml
