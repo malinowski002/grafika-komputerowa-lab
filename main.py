@@ -41,13 +41,6 @@ surfaces = (
     (4, 5, 6, 7)
 )
 
-# colors = (
-#     (0.08, 0.02, 0.52),
-#     (0.35, 0.04, 0.58),
-#     (0.78, 0.16, 0.53),
-#     (1, 1, 1)
-# )
-
 colors = (
     (0.5, 0.5, 0.5),
     (0.5, 0.5, 0.5),
@@ -57,15 +50,26 @@ colors = (
 
 # GROUND
 
+# ground_vertices = (
+#     (-4, -11, 2),  # 0
+#     (-4, -11, -2),  # 1
+#     (26, -11, -2),  # 2
+#     (26, -11, 2),  # 3
+#     (-4, -10, 2),  # 4
+#     (-4, -10, -2),  # 5
+#     (26, -10, -2),  # 6
+#     (26, -10, 2)  # 7
+# )
+
 ground_vertices = (
-    (-4, -11, 2),  # 0
-    (-4, -11, -2),  # 1
-    (26, -11, -2),  # 2
-    (26, -11, 2),  # 3
-    (-4, -10, 2),  # 4
-    (-4, -10, -2),  # 5
-    (26, -10, -2),  # 6
-    (26, -10, 2)  # 7
+    (0, -11, 2),  # 0
+    (0, -11, -2),  # 1
+    (22, -11, -2),  # 2
+    (22, -11, 2),  # 3
+    (0, -10, 2),  # 4
+    (0, -10, -2),  # 5
+    (22, -10, -2),  # 6
+    (22, -10, 2)  # 7
 )
 
 ground_edges = (
@@ -93,9 +97,11 @@ ground_surfaces = (
 )
 
 gravity = 0.02
+is_jumping = True
+on_ground = False
 
 # parametry cube
-c_position = [0, 0, 0]
+c_position = [2, 0, 0]
 velocity = 0.0
 
 
@@ -165,15 +171,11 @@ def enemy():
     glEnd()
 
 
-collision_occurred = False
-
-
 def check_collision():
-    global collision_occurred
-    if not collision_occurred and (c_position[0] - enemy_position[0]) ** 2 < 2 and \
+    if (c_position[0] - enemy_position[0]) ** 2 < 2 and \
             (c_position[1] - enemy_position[1]) ** 2 < 2 and \
             (c_position[2] - enemy_position[2]) ** 2 < 2:
-        print("Collided")
+        print("Collided with the enemy")
         enemy_position[0] = 30
 
 
@@ -181,6 +183,8 @@ def main():
     global velocity
     global c_position
     global enemy_position
+    global is_jumping
+    global on_ground
     pygame.init()
 
     display = (1152, 704)
@@ -189,8 +193,8 @@ def main():
     pygame.display.set_caption('Kacper Malinowski')
     font = pygame.font.SysFont('arial', 32)
 
-    gluPerspective(42, (display[0] / display[1]), 0.1, 50.0)
-    glTranslatef(-11.0, 5, -27)  # początkowa pozycja
+    gluPerspective(32, (display[0] / display[1]), 0.1, 50.0)
+    glTranslatef(-11.0, 6, -27)  # początkowa pozycja
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
 
@@ -205,6 +209,8 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     velocity = 0.6
+                    is_jumping = True
+                    on_ground = False
                 if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     is_moving_right = True
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
@@ -223,12 +229,15 @@ def main():
 
         # zmiana pozycji y cube
 
-        c_position[1] += velocity
-        velocity -= gravity
+        if is_jumping:
+            c_position[1] += velocity
+            velocity -= gravity
 
-        if c_position[1] < -9:
-            c_position[1] = -9
-            velocity *= -0.2
+            if c_position[1] < -9:
+                c_position[1] = -9
+                velocity = 0
+                is_jumping = False
+                on_ground = True
 
         # pozycja enemy
 
@@ -270,8 +279,9 @@ def main():
         glTranslatef(0.0, 0.0, 0.0)
         ground()
 
-        pygame.time.wait(10)
         pygame.display.flip()
+
+        pygame.time.wait(10)
 
 
 main()
