@@ -1,4 +1,5 @@
 from time import sleep as wait
+from math import cos, sin
 
 import pygame
 from pygame.locals import *
@@ -99,6 +100,18 @@ player_lives = 3
 c_position = [2, 0, 0]
 velocity = 0.0
 
+# źródło światła punktowego
+light_position = [10.0, 10.0, 10.0, 1.0]
+
+
+def setup_lighting():
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, (1.0, 1.0, 1.0, 1.0))  # Kolor światła rozproszonego
+    glLightfv(GL_LIGHT0, GL_SPECULAR, (1.0, 1.0, 1.0, 1.0))  # Kolor światła odbitego
+    glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))  # Kolor światła otoczenia
+
 
 def cube():
     glEnable(GL_BLEND)
@@ -116,6 +129,7 @@ def cube():
 
     glBegin(GL_QUADS)
     for surface in surfaces:
+        glNormal3fv(calculate_surface_normal(surface))  # Dodane obliczanie wektora normalnego dla oświetlenia
         for i, vertex in enumerate(surface):
             glColor3fv((0.47, 0.47, 1))
             glVertex3fv(vertices[vertex])
@@ -123,9 +137,6 @@ def cube():
 
 
 def ground():
-    # glEnable(GL_TEXTURE_2D)
-    # glBindTexture(GL_TEXTURE_2D, glGenTextures(1))
-
     glBegin(GL_LINES)
     for edge in ground_edges:
         for vertex in edge:
@@ -135,6 +146,7 @@ def ground():
 
     glBegin(GL_QUADS)
     for ground_surface in ground_surfaces:
+        glNormal3fv(calculate_surface_normal(ground_surface))  # Dodane obliczanie wektora normalnego dla oświetlenia
         for i, vertex in enumerate(ground_surface):
             glColor3fv((0.38, 0.78, 0.22))
             glVertex3fv(ground_vertices[vertex])
@@ -160,10 +172,25 @@ def enemy():
 
     glBegin(GL_QUADS)
     for surface in surfaces:
+        glNormal3fv(calculate_surface_normal(surface))  # Dodane obliczanie wektora normalnego dla oświetlenia
         for i, vertex in enumerate(surface):
             glColor3fv((1, 0.2, 0.2))
             glVertex3fv(vertices[vertex])
     glEnd()
+
+
+def calculate_surface_normal(surface):
+    # Funkcja do obliczania wektora normalnego dla podanej powierzchni
+    v1 = vertices[surface[0]]
+    v2 = vertices[surface[1]]
+    v3 = vertices[surface[2]]
+    normal = [
+        (v2[1] - v1[1]) * (v3[2] - v1[2]) - (v2[2] - v1[2]) * (v3[1] - v1[1]),
+        (v2[2] - v1[2]) * (v3[0] - v1[0]) - (v2[0] - v1[0]) * (v3[2] - v1[2]),
+        (v2[0] - v1[0]) * (v3[1] - v1[1]) - (v2[1] - v1[1]) * (v3[0] - v1[0])
+    ]
+    length = (normal[0]**2 + normal[1]**2 + normal[2]**2)**0.5
+    return [value / length for value in normal]
 
 
 def check_collision():
@@ -208,6 +235,8 @@ def main():
 
     is_moving_right = False
     is_moving_left = False
+
+    angle = 0.0
 
     while is_game_on:
         for event in pygame.event.get():
@@ -290,6 +319,14 @@ def main():
         glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
 
         # koniec pisania
+
+        radius = 10.0
+        light_position[0] = radius * cos(angle)
+        light_position[1] = radius * sin(angle)
+        light_position[2] = 5.0
+
+        setup_lighting()
+        angle += 0.03
 
         glTranslatef(0.0, 0.0, 0.0)
         ground()
