@@ -1,3 +1,5 @@
+from time import sleep as wait
+
 import pygame
 from pygame.locals import *
 from pygame import *
@@ -50,17 +52,6 @@ colors = (
 
 # GROUND
 
-# ground_vertices = (
-#     (-4, -11, 2),  # 0
-#     (-4, -11, -2),  # 1
-#     (26, -11, -2),  # 2
-#     (26, -11, 2),  # 3
-#     (-4, -10, 2),  # 4
-#     (-4, -10, -2),  # 5
-#     (26, -10, -2),  # 6
-#     (26, -10, 2)  # 7
-# )
-
 ground_vertices = (
     (0, -11, 2),  # 0
     (0, -11, -2),  # 1
@@ -96,9 +87,13 @@ ground_surfaces = (
     (4, 5, 6, 7)
 )
 
-gravity = 0.02
+is_game_on = True
+enemies_survived = 0
+gravity = 0.03
 is_jumping = True
 on_ground = False
+player_score = 0
+player_lives = 3
 
 # parametry cube
 c_position = [2, 0, 0]
@@ -172,14 +167,27 @@ def enemy():
 
 
 def check_collision():
+    global player_lives
+    global is_game_on
     if (c_position[0] - enemy_position[0]) ** 2 < 2 and \
             (c_position[1] - enemy_position[1]) ** 2 < 2 and \
             (c_position[2] - enemy_position[2]) ** 2 < 2:
         print("Collided with the enemy")
+        if player_lives > 1:
+            player_lives -= 1
+        else:
+            player_lives -= 1
+            wait(3)
+            is_game_on = False
+            print("You lost")
         enemy_position[0] = 30
 
 
 def main():
+    global enemies_survived
+    global is_game_on
+    global player_score
+    global player_lives
     global velocity
     global c_position
     global enemy_position
@@ -201,7 +209,7 @@ def main():
     is_moving_right = False
     is_moving_left = False
 
-    while True:
+    while is_game_on:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -241,10 +249,12 @@ def main():
 
         # pozycja enemy
 
-        if enemy_position[0] < -8:
-            enemy_position[0] = 30
+        if enemy_position[0] < -4:
+            enemies_survived += 1
+            player_score = enemies_survived
+            enemy_position[0] = 25
         else:
-            enemy_position[0] -= 0.1
+            enemy_position[0] -= (0.1 + enemies_survived*0.05)
 
         glClearColor(0.85, 0.94, 0.95, 1)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -269,9 +279,14 @@ def main():
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-        textSurface = font.render("Score: 0", True, (95, 95, 255, 255)).convert_alpha()
+        textSurface = font.render(f"Score: {player_score}", True, (95, 95, 255, 255)).convert_alpha()
         textData = pygame.image.tostring(textSurface, "RGBA", True)
         glWindowPos2d(50, 650)
+        glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
+
+        textSurface = font.render(f"Lives: {player_lives}", True, (255, 95, 95, 255)).convert_alpha()
+        textData = pygame.image.tostring(textSurface, "RGBA", True)
+        glWindowPos2d(50, 600)
         glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
 
         # koniec pisania
